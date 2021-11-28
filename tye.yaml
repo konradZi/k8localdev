@@ -1,0 +1,94 @@
+# tye application configuration file
+# read all about it at https://github.com/dotnet/tye
+#
+# when you've given us a try, we'd love to know what you think:
+#    https://aka.ms/AA7q20u
+#
+# define global settings here
+# name: exampleapp # application name
+# registry: exampleuser # dockerhub username or container registry hostname
+
+# define multiple services here
+name: k8
+services:
+- name: main
+  project: KS.Main/KS.MainApi/KS.MainApi.csproj
+  bindings:
+    - port: 36258
+      name: http
+      protocol: http
+    - port: 44354
+      name: https
+      protocol: https
+
+- name: mid
+  project: KS.Mid/KS.Mid.Api/KS.Mid.Api.csproj
+  bindings:
+    - port: 34336
+      name: http
+      protocol: http
+    - port: 44351
+      name: https
+      protocol: https
+
+  env:
+  - ASPNETCORE_ENVIRONMENT=Development
+  
+- name: fe
+  dockerFile: KsApp/Dockerfile
+  bindings:
+  - port: 4400
+    containerPort: 4400
+    name: http
+    protocol: http
+  volumes:
+  - source: ./KsApp/src
+    target: /usr/src/app/src
+  - source: ./e2e
+    target: /usr/src/app/e2e
+  - source: ./KsApp/tsconfig.json
+    target: /usr/src/app/tsconfig.json
+  - source: ./KsApp/tslint.json
+    target: /usr/src/app/tslint.json
+  - source: ./KsApp/package.json
+    target: /usr/src/app/package.json
+  - source: ./KsApp/node_modules
+    target: /usr/src/app/node_modules
+  args: ng serve --host 0.0.0.0 --port 4400 --poll 1
+- name: fee
+  dockerFile: KsAppp/Dockerfile
+  bindings:
+  - port: 4300
+    containerPort: 4300
+    name: http
+    protocol: http
+  volumes:
+  - source: ./KsAppp/src
+    target: /usr/src/app/src
+  - source: ./e2e
+    target: /usr/src/app/e2e
+  - source: ./KsAppp/tsconfig.json
+    target: /usr/src/app/tsconfig.json
+  - source: ./KsAppp/tslint.json
+    target: /usr/src/app/tslint.json
+  - source: ./KsAppp/package.json
+    target: /usr/src/app/package.json
+  - source: ./KsAppp/node_modules
+    target: /usr/src/app/node_modules
+  args: ng serve --host 0.0.0.0 --port 4300 --poll 1
+# - name: fee
+  # dockerFile: KsAppp/Dockerfile
+  # bindings:
+    # - port: 9085
+      # name: http
+      # protocol: http 
+
+  # project: app.csproj # msbuild project path (relative to this file)
+  # executable: app.exe # path to an executable (relative to this file)
+  # args: --arg1=3 # arguments to pass to the process
+  # replicas: 5 # number of times to launch the application
+  # env: # array of environment variables
+  #  - name: key
+  #    value: value
+  # bindings: # optional array of bindings (ports, connection strings)
+    # - port: 8080 # number port of the binding
